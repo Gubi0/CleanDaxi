@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CleanPro — Gestionare Servicii Curățenie</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #21262d;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #6e7681;
+  --accent: #00d4aa;
+  --accent2: #00b894;
+  --accent-dim: rgba(0,212,170,0.12);
+  --blue: #58a6ff;
+  --orange: #f0883e;
+  --red: #f85149;
+  --yellow: #e3b341;
+  --green: #3fb950;
+  --purple: #bc8cff;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* LAYOUT */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:width .3s}
+.sidebar.collapsed{width:60px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:60px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* SIDEBAR */
+.logo{padding:20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--blue));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-text{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;overflow:hidden}
+.nav{flex:1;padding:12px 8px;overflow-y:auto}
+.nav-section{margin-bottom:20px}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px 6px;white-space:nowrap;overflow:hidden}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;color:var(--text2);position:relative;overflow:hidden;white-space:nowrap}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--accent-dim);color:var(--accent)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--accent);border-radius:0 2px 2px 0}
+.nav-item i{width:18px;text-align:center;flex-shrink:0}
+.nav-item span{overflow:hidden;text-overflow:ellipsis}
+.badge{margin-left:auto;background:var(--accent);color:#000;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0}
+.sidebar-footer{padding:12px 8px;border-top:1px solid var(--border)}
+.toggle-btn{width:36px;height:36px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;transition:all .2s;margin:0 auto}
+.toggle-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+/* TOPBAR */
+.search-box{flex:1;max-width:360px;position:relative}
+.search-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px 8px 36px;color:var(--text);font-family:inherit;font-size:13px;transition:all .2s}
+.search-box input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.search-box input::placeholder{color:var(--text3)}
+.search-box i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px}
+.topbar-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.icon-btn{width:36px;height:36px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;transition:all .2s;position:relative}
+.icon-btn:hover{color:var(--accent);border-color:var(--accent)}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;background:var(--red);border-radius:50%;border:2px solid var(--bg2)}
+.btn{padding:8px 16px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.btn-danger:hover{background:rgba(248,81,73,.25)}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* VIEWS */
+.view{display:none}
+.view.active{display:block}
+
+/* DASHBOARD */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap}
+.page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800}
+.page-subtitle{color:var(--text2);font-size:13px;margin-top:2px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;transition:all .2s}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c,var(--accent))}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.stat-icon{width:40px;height:40px;border-radius:10px;background:rgba(var(--cr,0,212,170),.12);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px;color:var(--c,var(--accent))}
+.stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1}
+.stat-label{color:var(--text2);font-size:12px;margin-top:4px}
+.stat-change{font-size:11px;margin-top:8px;display:flex;align-items:center;gap:4px}
+.stat-change.up{color:var(--green)}
+.stat-change.down{color:var(--red)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--accent)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+th{background:var(--bg3);padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
+td{padding:12px 14px;border-top:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.02)}
+.cell-main{font-weight:500}
+.cell-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.avatar-group{display:flex}
+.avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--blue));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000;border:2px solid var(--bg2);margin-left:-6px;flex-shrink:0}
+.avatar:first-child{margin-left:0}
+
+/* BADGES */
+.status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.status::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.status-active{background:rgba(63,185,80,.15);color:var(--green)}
+.status-pending{background:rgba(227,179,65,.15);color:var(--yellow)}
+.status-done{background:rgba(0,212,170,.15);color:var(--accent)}
+.status-cancelled{background:rgba(248,81,73,.15);color:var(--red)}
+.type-badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;background:var(--bg3);color:var(--text2);white-space:nowrap}
+
+/* FILTERS */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filter-select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;color:var(--text);font-family:inherit;font-size:13px;cursor:pointer}
+.filter-select:focus{outline:none;border-color:var(--accent)}
+.filter-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;color:var(--text);font-family:inherit;font-size:13px}
+.filter-input:focus{outline:none;border-color:var(--accent)}
+.filter-input::placeholder{color:var(--text3)}
+.filter-btn{padding:7px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;transition:all .2s}
+.filter-btn.active,.filter-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* CALENDAR */
+.calendar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.cal-nav{display:flex;align-items:center;gap:12px}
+.cal-nav button{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);width:30px;height:30px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.cal-nav button:hover{border-color:var(--accent);color:var(--accent)}
+.cal-title{font-weight:700;font-size:15px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-dow{padding:8px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+.cal-cell{min-height:90px;padding:6px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;position:relative}
+.cal-cell:hover{background:rgba(255,255,255,.03)}
+.cal-cell.today .cal-day{background:var(--accent);color:#000;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.cal-cell.other-month .cal-day{color:var(--text3)}
+.cal-day{font-size:12px;font-weight:600;margin-bottom:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.cal-event{background:var(--accent-dim);color:var(--accent);font-size:10px;padding:2px 5px;border-radius:4px;margin-bottom:2px;border-left:2px solid var(--accent);truncate:ellipsis;overflow:hidden;white-space:nowrap;max-width:100%;cursor:pointer}
+.cal-event.ev-active{background:rgba(63,185,80,.15);color:var(--green);border-color:var(--green)}
+.cal-event.ev-cancelled{background:rgba(248,81,73,.15);color:var(--red);border-color:var(--red)}
+.cal-event.ev-pending{background:rgba(227,179,65,.15);color:var(--yellow);border-color:var(--yellow)}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
+.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+.modal-close{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);width:32px;height:32px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{color:var(--red);border-color:var(--red)}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--bg2)}
+
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.form-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;font-weight:600;color:var(--text2)}
+input,select,textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-family:inherit;font-size:13px;transition:all .2s;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+select option{background:var(--bg3)}
+textarea{resize:vertical;min-height:80px}
+.form-row{display:flex;gap:8px;align-items:center}
+.agent-tag{display:inline-flex;align-items:center;gap:5px;background:var(--accent-dim);border:1px solid rgba(0,212,170,.3);color:var(--accent);padding:4px 8px;border-radius:20px;font-size:12px;font-weight:500}
+.agent-tag button{background:none;border:none;cursor:pointer;color:var(--accent);font-size:10px;padding:0;line-height:1}
+.agents-container{display:flex;flex-wrap:wrap;gap:6px;min-height:32px;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);align-items:center}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.cost-preview{background:var(--accent-dim);border:1px solid rgba(0,212,170,.3);border-radius:var(--radius-sm);padding:12px;margin-top:4px}
+.cost-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px}
+.cost-total{display:flex;justify-content:space-between;font-weight:700;font-size:15px;color:var(--accent);padding-top:8px;border-top:1px solid rgba(0,212,170,.2)}
+.section-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* DETAIL MODAL */
+.detail-section{margin-bottom:20px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.detail-item label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:3px}
+.detail-item .value{font-size:14px;font-weight:500}
+.status-bar{display:flex;gap:8px;margin-bottom:20px}
+.status-option{flex:1;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);cursor:pointer;text-align:center;font-size:12px;font-weight:600;transition:all .2s;color:var(--text2)}
+.status-option:hover{border-color:var(--accent)}
+.status-option.selected-active{background:rgba(63,185,80,.15);border-color:var(--green);color:var(--green)}
+.status-option.selected-pending{background:rgba(227,179,65,.15);border-color:var(--yellow);color:var(--yellow)}
+.status-option.selected-done{background:rgba(0,212,170,.15);border-color:var(--accent);color:var(--accent)}
+.status-option.selected-cancelled{background:rgba(248,81,73,.15);border-color:var(--red);color:var(--red)}
+.notes-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:13px;color:var(--text2);min-height:50px;white-space:pre-wrap}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.photo-slot{aspect-ratio:1;border:2px dashed var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-direction:column;gap:6px;color:var(--text3);font-size:11px}
+.photo-slot:hover{border-color:var(--accent);color:var(--accent)}
+.photo-thumb{width:100%;height:100%;object-fit:cover;border-radius:calc(var(--radius-sm) - 2px)}
+
+/* EMPLOYEES */
+.employee-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.employee-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;transition:all .2s;position:relative}
+.employee-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.emp-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#000;margin:0 auto 10px}
+.emp-name{font-weight:600;font-size:14px;margin-bottom:3px}
+.emp-phone{font-size:12px;color:var(--text2);margin-bottom:8px}
+.emp-status{font-size:11px}
+.emp-actions{display:flex;gap:6px;justify-content:center;margin-top:10px}
+
+/* CLIENT HISTORY */
+.history-item{border-left:2px solid var(--border);padding-left:14px;margin-bottom:16px;position:relative}
+.history-item::before{content:'';position:absolute;left:-5px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--bg2)}
+.history-item.hi-done::before{background:var(--green)}
+.history-item.hi-cancelled::before{background:var(--red)}
+.history-item.hi-active::before{background:var(--yellow)}
+.hi-date{font-size:11px;color:var(--text3);margin-bottom:4px}
+.hi-title{font-weight:600;font-size:13px}
+.hi-sub{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* REPORTS */
+.report-summary{background:linear-gradient(135deg,rgba(0,212,170,.1),rgba(88,166,255,.1));border:1px solid rgba(0,212,170,.2);border-radius:var(--radius);padding:20px;margin-bottom:20px}
+.report-big{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--accent)}
+.report-label{color:var(--text2);font-size:13px}
+
+/* TOAST */
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:var(--shadow);animation:toastIn .3s ease;max-width:320px}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.info{border-left:3px solid var(--accent)}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateX(20px)}}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-state i{font-size:48px;margin-bottom:16px;display:block;opacity:.4}
+.empty-state p{font-size:14px;margin-bottom:16px}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{position:fixed;z-index:100;height:100%;transform:translateX(-100%);transition:transform .3s}
+  .sidebar.mobile-open{transform:none}
+  .content{padding:16px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .cal-cell{min-height:60px}
+  .cal-event{display:none}
+  .cal-cell.has-event::after{content:'•';color:var(--accent);font-size:16px;position:absolute;bottom:4px;left:50%;transform:translateX(-50%)}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .detail-grid{grid-template-columns:1fr}
+  .page-header{flex-direction:column;align-items:flex-start}
+}
+.flex{display:flex}
+.items-center{align-items:center}
+.gap-8{gap:8px}
+.gap-12{gap:12px}
+.mt-16{margin-top:16px}
+.text-sm{font-size:12px}
+.text-muted{color:var(--text2)}
+.font-bold{font-weight:700}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🧹</div>
+    <div class="logo-text">CleanPro</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">
+      <div class="nav-label">General</div>
+      <div class="nav-item active" onclick="showView('dashboard',this)"><i class="fa fa-chart-pie"></i><span>Dashboard</span></div>
+      <div class="nav-item" onclick="showView('jobs',this)"><i class="fa fa-list-check"></i><span>Lucrări</span><span class="badge" id="nav-jobs-badge">0</span></div>
+      <div class="nav-item" onclick="showView('calendar',this)"><i class="fa fa-calendar"></i><span>Calendar</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Gestionare</div>
+      <div class="nav-item" onclick="showView('clients',this)"><i class="fa fa-users"></i><span>Clienți</span></div>
+      <div class="nav-item" onclick="showView('employees',this)"><i class="fa fa-user-tie"></i><span>Angajați</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Rapoarte</div>
+      <div class="nav-item" onclick="showView('reports',this)"><i class="fa fa-chart-bar"></i><span>Rapoarte</span></div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="toggle-btn" id="toggleSidebar" onclick="toggleSidebar()"><i class="fa fa-angles-left"></i></button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <button class="icon-btn" id="mobileMenuBtn" onclick="document.getElementById('sidebar').classList.toggle('mobile-open')" style="display:none"><i class="fa fa-bars"></i></button>
+    <div class="search-box">
+      <i class="fa fa-magnifying-glass"></i>
+      <input type="text" id="globalSearch" placeholder="Caută client, telefon, locație..." oninput="globalSearchFn(this.value)">
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="exportCSV()" title="Export CSV"><i class="fa fa-file-csv"></i></button>
+      <button class="icon-btn" title="Notificări"><i class="fa fa-bell"></i><span class="notif-dot"></span></button>
+      <button class="btn btn-primary" onclick="openAddJob()"><i class="fa fa-plus"></i>Lucrare Nouă</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle" id="dash-date"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <select class="filter-select" id="dashPeriod" onchange="renderDashboard()">
+            <option value="7">Ultimele 7 zile</option>
+            <option value="30" selected>Ultima lună</option>
+            <option value="90">Ultimele 3 luni</option>
+            <option value="365">Anul curent</option>
+          </select>
+        </div>
+      </div>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa fa-clock"></i> Programări Azi</div>
+            <button class="btn btn-secondary btn-sm" onclick="showView('calendar',document.querySelector('.nav-item:nth-child(3)'))">Vezi calendar</button>
+          </div>
+          <div id="todayJobs"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa fa-fire"></i> Lucrări Recente</div>
+          </div>
+          <div id="recentJobs"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOBS -->
+    <div class="view" id="view-jobs">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Lucrări</div>
+          <div class="page-subtitle">Gestionează toate intervențiile de curățenie</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddJob()"><i class="fa fa-plus"></i>Adaugă Lucrare</button>
+      </div>
+      <div class="filters">
+        <input type="text" class="filter-input" placeholder="🔍 Caută..." id="jobSearch" oninput="renderJobs()">
+        <input type="date" class="filter-input" id="filterDate" onchange="renderJobs()">
+        <select class="filter-select" id="filterStatus" onchange="renderJobs()">
+          <option value="">Toate statusurile</option>
+          <option value="pending">Programat</option>
+          <option value="active">În desfășurare</option>
+          <option value="done">Finalizat</option>
+          <option value="cancelled">Anulat</option>
+        </select>
+        <select class="filter-select" id="filterType" onchange="renderJobs()">
+          <option value="">Toate tipurile</option>
+          <option value="Întreținere">Întreținere</option>
+          <option value="Generală">Generală</option>
+          <option value="După constructor">După constructor</option>
+          <option value="Deep cleaning">Deep cleaning</option>
+          <option value="Office">Office</option>
+          <option value="Industrial">Industrial</option>
+        </select>
+        <button class="filter-btn" onclick="clearFilters()"><i class="fa fa-xmark"></i> Resetează</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Locație</th>
+              <th>Data & Ora</th>
+              <th>Tip</th>
+              <th>Echipă</th>
+              <th>Durată</th>
+              <th>Cost</th>
+              <th>Status</th>
+              <th>Acțiuni</th>
+            </tr>
+          </thead>
+          <tbody id="jobsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="view" id="view-calendar">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Calendar</div>
+          <div class="page-subtitle">Vizualizare programări</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddJob()"><i class="fa fa-plus"></i>Adaugă</button>
+      </div>
+      <div class="calendar">
+        <div class="cal-header">
+          <div class="cal-nav">
+            <button onclick="changeMonth(-1)"><i class="fa fa-chevron-left"></i></button>
+            <div class="cal-title" id="calTitle"></div>
+            <button onclick="changeMonth(1)"><i class="fa fa-chevron-right"></i></button>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="goToday()">Azi</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div class="view" id="view-clients">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Clienți</div>
+          <div class="page-subtitle">Istoric per client</div>
+        </div>
+      </div>
+      <div class="filters">
+        <input type="text" class="filter-input" placeholder="🔍 Caută client sau telefon..." id="clientSearch" oninput="renderClients()">
+      </div>
+      <div id="clientsList"></div>
+    </div>
+
+    <!-- EMPLOYEES -->
+    <div class="view" id="view-employees">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Angajați</div>
+          <div class="page-subtitle">Gestionare echipă</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddEmployee()"><i class="fa fa-plus"></i>Adaugă Angajat</button>
+      </div>
+      <div class="employee-grid" id="employeeGrid"></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="view" id="view-reports">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Rapoarte</div>
+          <div class="page-subtitle">Statistici și export</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" onclick="exportCSV()"><i class="fa fa-file-csv"></i>Export CSV</button>
+          <button class="btn btn-primary" onclick="printReport()"><i class="fa fa-print"></i>Printează</button>
+        </div>
+      </div>
+      <div id="reportsContent"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ADD/EDIT JOB MODAL -->
+<div class="overlay" id="jobModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="jobModalTitle">Lucrare Nouă</div>
+      <button class="modal-close" onclick="closeModal('jobModal')"><i class="fa fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="section-title">Informații Client</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nume Client *</label>
+          <input type="text" id="fClientName" placeholder="ex: Ionescu Maria" oninput="suggestClient(this.value)">
+          <div id="clientSuggest" style="position:relative"></div>
+        </div>
+        <div class="form-group">
+          <label>Telefon Client *</label>
+          <input type="tel" id="fClientPhone" placeholder="ex: 0740 123 456">
+        </div>
+      </div>
+      <div class="section-title">Detalii Lucrare</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Locație (adresă completă) *</label>
+          <input type="text" id="fLocation" placeholder="ex: Str. Florilor 12, ap.3, Constanța">
+        </div>
+        <div class="form-group">
+          <label>Data *</label>
+          <input type="date" id="fDate">
+        </div>
+        <div class="form-group">
+          <label>Ora *</label>
+          <input type="time" id="fTime">
+        </div>
+        <div class="form-group">
+          <label>Tip Curățenie *</label>
+          <select id="fType" onchange="calcCost()">
+            <option value="Întreținere">Întreținere</option>
+            <option value="Generală">Generală</option>
+            <option value="După constructor">După constructor</option>
+            <option value="Deep cleaning">Deep cleaning</option>
+            <option value="Office">Office</option>
+            <option value="Industrial">Industrial</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Durată (ore) *</label>
+          <input type="number" id="fDuration" min="1" max="24" value="3" oninput="calcCost()">
+        </div>
+        <div class="form-group">
+          <label>Număr Agenți *</label>
+          <input type="number" id="fAgentCount" min="1" max="20" value="2" oninput="calcCost()">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Agenți implicați</label>
+        <div class="form-row" style="flex-wrap:wrap;gap:6px;margin-bottom:6px">
+          <select id="agentSelect" class="filter-select" style="flex:1;min-width:140px">
+            <option value="">Selectează agent...</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="addAgentTag()"><i class="fa fa-plus"></i></button>
+        </div>
+        <div class="agents-container" id="agentsContainer"><span style="color:var(--text3);font-size:12px">Niciun agent selectat</span></div>
+      </div>
+      <div class="section-title" style="margin-top:16px">Calcul Cost</div>
+      <div class="cost-preview" id="costPreview"></div>
+      <div class="form-group" style="margin-top:14px">
+        <label>Preț personalizat (RON) — lasă gol pentru calcul automat</label>
+        <input type="number" id="fCustomPrice" placeholder="ex: 350" oninput="calcCost()">
+      </div>
+      <div class="section-title" style="margin-top:16px">Extra</div>
+      <div class="form-group">
+        <label>Notițe / Cerințe speciale</label>
+        <textarea id="fNotes" placeholder="ex: Cheile la portăriță, nu deranjați după ora 18..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="fStatus">
+          <option value="pending">Programat</option>
+          <option value="active">În desfășurare</option>
+          <option value="done">Finalizat</option>
+          <option value="cancelled">Anulat</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('jobModal')">Anulează</button>
+      <button class="btn btn-primary" onclick="saveJob()"><i class="fa fa-floppy-disk"></i>Salvează</button>
+    </div>
+  </div>
+</div>
+
+<!-- JOB DETAIL MODAL -->
+<div class="overlay" id="detailModal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div class="modal-title" id="detailTitle">Detalii Lucrare</div>
+      <button class="modal-close" onclick="closeModal('detailModal')"><i class="fa fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer" id="detailFooter"></div>
+  </div>
+</div>
+
+<!-- EMPLOYEE MODAL -->
+<div class="overlay" id="empModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title" id="empModalTitle">Angajat Nou</div>
+      <button class="modal-close" onclick="closeModal('empModal')"><i class="fa fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nume complet *</label>
+          <input type="text" id="eeName" placeholder="ex: Popescu Ana">
+        </div>
+        <div class="form-group">
+          <label>Telefon</label>
+          <input type="tel" id="eePhone" placeholder="0740 000 000">
+        </div>
+        <div class="form-group">
+          <label>Disponibilitate</label>
+          <select id="eeStatus">
+            <option value="available">Disponibil</option>
+            <option value="busy">Ocupat</option>
+            <option value="off">Liber</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Specialitate</label>
+          <select id="eeSpecialty">
+            <option>General</option>
+            <option>Deep cleaning</option>
+            <option>Industrial</option>
+            <option>Office</option>
+            <option>Post-construcție</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('empModal')">Anulează</button>
+      <button class="btn btn-primary" onclick="saveEmployee()"><i class="fa fa-floppy-disk"></i>Salvează</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+let jobs = JSON.parse(localStorage.getItem('cp_jobs') || '[]');
+let employees = JSON.parse(localStorage.getItem('cp_employees') || '[]');
+let editingJobId = null;
+let editingEmpId = null;
+let calYear, calMonth;
+let selectedAgents = [];
+
+const TYPE_RATES = {
+  'Întreținere': 40,
+  'Generală': 55,
+  'După constructor': 70,
+  'Deep cleaning': 80,
+  'Office': 50,
+  'Industrial': 90
+};
+
+// Seed demo data
+if (!jobs.length) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const d = (offset) => {
+    const dt = new Date(now);
+    dt.setDate(dt.getDate() + offset);
+    return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+  };
+  jobs = [
+    {id:1, clientName:'Popescu Maria', clientPhone:'0740123456', location:'Str. Mihai Eminescu 12, Constanța', date:d(0), time:'09:00', type:'Generală', duration:4, agentCount:2, agents:['Ionescu Ana','Dumitru Radu'], status:'active', notes:'Apartament etaj 3, interfon 34', price:440, customPrice:null},
+    {id:2, clientName:'Ionescu Dan', clientPhone:'0721987654', location:'Bd. Tomis 45, bl.A2, sc.1, Constanța', date:d(1), time:'10:00', type:'Deep cleaning', duration:6, agentCount:3, agents:['Popa Elena','Vasile Ion','Stancu Maria'], status:'pending', notes:'', price:1440, customPrice:null},
+    {id:3, clientName:'Georgescu Alina', clientPhone:'0755321654', location:'Str. Unirii 7, Mangalia', date:d(-2), time:'08:00', type:'După constructor', duration:8, agentCount:4, agents:['Ionescu Ana','Dumitru Radu','Popa Elena','Vasile Ion'], status:'done', notes:'Construcție nouă, mult praf', price:2240, customPrice:null},
+    {id:4, clientName:'Marin Tech SRL', clientPhone:'0264000111', location:'Bd. Alexandru Lăpușneanu 100, Constanța', date:d(3), time:'07:00', type:'Office', duration:3, agentCount:2, agents:['Stancu Maria'], status:'pending', notes:'Acces la 07:00 pe ușa din spate', price:300, customPrice:null},
+    {id:5, clientName:'Popescu Maria', clientPhone:'0740123456', location:'Str. Mihai Eminescu 12, Constanța', date:d(-10), time:'09:00', type:'Întreținere', duration:2, agentCount:1, agents:['Ionescu Ana'], status:'done', notes:'', price:80, customPrice:null},
+  ];
+  saveData();
+}
+
+if (!employees.length) {
+  employees = [
+    {id:1, name:'Ionescu Ana', phone:'0740111222', status:'available', specialty:'General'},
+    {id:2, name:'Dumitru Radu', phone:'0740333444', status:'busy', specialty:'Deep cleaning'},
+    {id:3, name:'Popa Elena', phone:'0740555666', status:'available', specialty:'Post-construcție'},
+    {id:4, name:'Vasile Ion', phone:'0740777888', status:'off', specialty:'Industrial'},
+    {id:5, name:'Stancu Maria', phone:'0740999000', status:'available', specialty:'Office'},
+  ];
+  saveEmpData();
+}
+
+function saveData() { localStorage.setItem('cp_jobs', JSON.stringify(jobs)); updateBadges(); }
+function saveEmpData() { localStorage.setItem('cp_employees', JSON.stringify(employees)); }
+function genId() { return Date.now() + Math.floor(Math.random()*1000); }
+
+// ===================== NAV =====================
+function showView(name, el) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  if(name==='dashboard') renderDashboard();
+  if(name==='jobs') renderJobs();
+  if(name==='calendar') renderCalendar();
+  if(name==='clients') renderClients();
+  if(name==='employees') renderEmployees();
+  if(name==='reports') renderReports();
+  document.getElementById('sidebar').classList.remove('mobile-open');
+}
+
+function toggleSidebar() {
+  const s = document.getElementById('sidebar');
+  s.classList.toggle('collapsed');
+  const btn = document.getElementById('toggleSidebar');
+  btn.innerHTML = s.classList.contains('collapsed') ? '<i class="fa fa-angles-right"></i>' : '<i class="fa fa-angles-left"></i>';
+}
+
+function updateBadges() {
+  document.getElementById('nav-jobs-badge').textContent = jobs.filter(j=>j.status==='pending'||j.status==='active').length;
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard() {
+  const period = parseInt(document.getElementById('dashPeriod').value);
+  const now = new Date();
+  const cutoff = new Date(now); cutoff.setDate(cutoff.getDate() - period);
+  const filtered = jobs.filter(j => new Date(j.date) >= cutoff);
+  const done = filtered.filter(j=>j.status==='done');
+  const active = filtered.filter(j=>j.status==='active');
+  const pending = filtered.filter(j=>j.status==='pending');
+  const revenue = done.reduce((s,j)=>s+(j.price||0),0);
+  const hours = done.reduce((s,j)=>s+(j.duration||0),0);
+
+  document.getElementById('dash-date').textContent = `${now.toLocaleDateString('ro-RO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`;
+
+  const stats = [
+    {label:'Lucrări Totale',value:filtered.length,icon:'fa-list-check',color:'var(--accent)',cr:'0,212,170',change:'+12%',up:true},
+    {label:'Venituri (RON)',value:revenue.toLocaleString('ro-RO'),icon:'fa-wallet',color:'var(--green)',cr:'63,185,80',change:'+8%',up:true},
+    {label:'Ore Lucrate',value:hours,icon:'fa-clock',color:'var(--blue)',cr:'88,166,255',change:'+5%',up:true},
+    {label:'În Desfășurare',value:active.length,icon:'fa-spinner',color:'var(--yellow)',cr:'227,179,65',change:active.length?'Activ':'',up:null},
+  ];
+  document.getElementById('statsGrid').innerHTML = stats.map(s=>`
+    <div class="stat-card" style="--c:${s.color};--cr:${s.cr}">
+      <div class="stat-icon"><i class="fa ${s.icon}"></i></div>
+      <div class="stat-value">${s.value}</div>
+      <div class="stat-label">${s.label}</div>
+      ${s.change?`<div class="stat-change ${s.up===true?'up':s.up===false?'down':''}">${s.up===true?'↑':s.up===false?'↓':''} ${s.change}</div>`:''}
+    </div>`).join('');
+
+  // Today jobs
+  const todayStr = now.toISOString().split('T')[0];
+  const todayJobs = jobs.filter(j=>j.date===todayStr);
+  const todayEl = document.getElementById('todayJobs');
+  if(!todayJobs.length) { todayEl.innerHTML='<div class="empty-state" style="padding:30px 0"><i class="fa fa-calendar-check"></i><p>Nicio programare azi</p></div>'; }
+  else todayEl.innerHTML = todayJobs.map(j=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openDetail(${j.id})">
+      <div style="text-align:center;min-width:40px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent)">${j.time}</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="cell-main truncate">${j.clientName}</div>
+        <div class="cell-sub truncate">${j.type} · ${j.location.split(',')[0]}</div>
+      </div>
+      <span class="status status-${j.status}">${statusLabel(j.status)}</span>
+    </div>`).join('');
+
+  // Recent jobs
+  const recent = [...jobs].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  document.getElementById('recentJobs').innerHTML = recent.map(j=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openDetail(${j.id})">
+      <div style="flex:1;min-width:0">
+        <div class="cell-main truncate">${j.clientName}</div>
+        <div class="cell-sub">${j.date} · ${j.type}</div>
+      </div>
+      <div style="font-weight:700;color:var(--accent);font-size:13px;white-space:nowrap">${(j.price||0).toLocaleString('ro-RO')} RON</div>
+    </div>`).join('');
+}
+
+// ===================== JOBS =====================
+function renderJobs() {
+  let list = [...jobs];
+  const s = (document.getElementById('jobSearch').value||'').toLowerCase();
+  const fDate = document.getElementById('filterDate').value;
+  const fStatus = document.getElementById('filterStatus').value;
+  const fType = document.getElementById('filterType').value;
+  if(s) list = list.filter(j=>j.clientName.toLowerCase().includes(s)||j.clientPhone.includes(s)||j.location.toLowerCase().includes(s));
+  if(fDate) list = list.filter(j=>j.date===fDate);
+  if(fStatus) list = list.filter(j=>j.status===fStatus);
+  if(fType) list = list.filter(j=>j.type===fType);
+  list.sort((a,b)=>new Date(b.date+' '+b.time)-new Date(a.date+' '+a.time));
+
+  const tbody = document.getElementById('jobsTableBody');
+  if(!list.length){tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><i class="fa fa-box-open"></i><p>Nicio lucrare găsită</p></div></td></tr>`;return;}
+  tbody.innerHTML = list.map(j=>`
+    <tr>
+      <td><div class="cell-main">${j.clientName}</div><div class="cell-sub">${j.clientPhone}</div></td>
+      <td><div class="truncate" style="max-width:160px" title="${j.location}">${j.location}</div></td>
+      <td><div class="cell-main">${formatDate(j.date)}</div><div class="cell-sub">${j.time}</div></td>
+      <td><span class="type-badge">${j.type}</span></td>
+      <td>
+        <div class="avatar-group">${(j.agents||[]).slice(0,3).map(a=>`<div class="avatar" title="${a}">${initials(a)}</div>`).join('')}${j.agents&&j.agents.length>3?`<div class="avatar">+${j.agents.length-3}</div>`:''}</div>
+        <div class="cell-sub">${j.agentCount} agenți · ${j.duration}h</div>
+      </td>
+      <td>${j.duration}h</td>
+      <td><strong>${(j.price||0).toLocaleString('ro-RO')} RON</strong></td>
+      <td><span class="status status-${j.status}">${statusLabel(j.status)}</span></td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="icon-btn" style="width:28px;height:28px;font-size:12px" onclick="openDetail(${j.id})" title="Detalii"><i class="fa fa-eye"></i></button>
+          <button class="icon-btn" style="width:28px;height:28px;font-size:12px" onclick="openEditJob(${j.id})" title="Editează"><i class="fa fa-pen"></i></button>
+          <button class="icon-btn" style="width:28px;height:28px;font-size:12px;color:var(--red)" onclick="deleteJob(${j.id})" title="Șterge"><i class="fa fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function clearFilters(){
+  document.getElementById('jobSearch').value='';
+  document.getElementById('filterDate').value='';
+  document.getElementById('filterStatus').value='';
+  document.getElementById('filterType').value='';
+  renderJobs();
+}
+
+function deleteJob(id){
+  if(!confirm('Ștergi această lucrare?')) return;
+  jobs = jobs.filter(j=>j.id!==id);
+  saveData(); renderJobs();
+  toast('Lucrarea a fost ștearsă','info');
+}
+
+function statusLabel(s){
+  return {pending:'Programat',active:'În desfășurare',done:'Finalizat',cancelled:'Anulat'}[s]||s;
+}
+
+// ===================== ADD / EDIT JOB =====================
+function openAddJob(){
+  editingJobId = null;
+  selectedAgents = [];
+  document.getElementById('jobModalTitle').textContent = 'Lucrare Nouă';
+  clearJobForm();
+  const now = new Date();
+  document.getElementById('fDate').value = now.toISOString().split('T')[0];
+  document.getElementById('fTime').value = '08:00';
+  populateAgentSelect();
+  calcCost();
+  openModal('jobModal');
+}
+
+function openEditJob(id){
+  const j = jobs.find(x=>x.id===id);
+  if(!j) return;
+  editingJobId = id;
+  selectedAgents = [...(j.agents||[])];
+  document.getElementById('jobModalTitle').textContent = 'Editează Lucrare';
+  document.getElementById('fClientName').value = j.clientName;
+  document.getElementById('fClientPhone').value = j.clientPhone;
+  document.getElementById('fLocation').value = j.location;
+  document.getElementById('fDate').value = j.date;
+  document.getElementById('fTime').value = j.time;
+  document.getElementById('fType').value = j.type;
+  document.getElementById('fDuration').value = j.duration;
+  document.getElementById('fAgentCount').value = j.agentCount;
+  document.getElementById('fNotes').value = j.notes||'';
+  document.getElementById('fStatus').value = j.status;
+  document.getElementById('fCustomPrice').value = j.customPrice||'';
+  populateAgentSelect();
+  renderAgentTags();
+  calcCost();
+  openModal('jobModal');
+  closeModal('detailModal');
+}
+
+function clearJobForm(){
+  ['fClientName','fClientPhone','fLocation','fDate','fTime','fNotes','fCustomPrice'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fType').value='Generală';
+  document.getElementById('fDuration').value=3;
+  document.getElementById('fAgentCount').value=2;
+  document.getElementById('fStatus').value='pending';
+  selectedAgents=[];
+  renderAgentTags();
+}
+
+function populateAgentSelect(){
+  const sel = document.getElementById('agentSelect');
+  sel.innerHTML='<option value="">Selectează agent...</option>'+employees.map(e=>`<option value="${e.name}">${e.name} (${e.specialty})</option>`).join('');
+}
+
+function addAgentTag(){
+  const sel = document.getElementById('agentSelect');
+  const val = sel.value;
+  if(!val || selectedAgents.includes(val)) return;
+  selectedAgents.push(val);
+  renderAgentTags();
+}
+
+function removeAgent(name){
+  selectedAgents = selectedAgents.filter(a=>a!==name);
+  renderAgentTags();
+}
+
+function renderAgentTags(){
+  const c = document.getElementById('agentsContainer');
+  if(!selectedAgents.length){c.innerHTML='<span style="color:var(--text3);font-size:12px">Niciun agent selectat</span>';return;}
+  c.innerHTML=selectedAgents.map(a=>`<span class="agent-tag">${a}<button onclick="removeAgent('${a}')">&times;</button></span>`).join('');
+}
+
+function calcCost(){
+  const type = document.getElementById('fType').value;
+  const dur = parseFloat(document.getElementById('fDuration').value)||0;
+  const agents = parseInt(document.getElementById('fAgentCount').value)||1;
+  const custom = parseFloat(document.getElementById('fCustomPrice').value);
+  const rate = TYPE_RATES[type]||50;
+  const auto = rate * dur * agents;
+  const final = !isNaN(custom)&&custom>0 ? custom : auto;
+  document.getElementById('costPreview').innerHTML=`
+    <div class="cost-row"><span>Tarif ${type}</span><span>${rate} RON/h/agent</span></div>
+    <div class="cost-row"><span>${dur}h × ${agents} agenți</span><span>= ${auto.toLocaleString('ro-RO')} RON</span></div>
+    ${(!isNaN(custom)&&custom>0)?`<div class="cost-row"><span>Preț personalizat</span><span>${custom.toLocaleString('ro-RO')} RON</span></div>`:''}
+    <div class="cost-total"><span>Total estimat</span><span>${final.toLocaleString('ro-RO')} RON</span></div>`;
+}
+
+function saveJob(){
+  const clientName = document.getElementById('fClientName').value.trim();
+  const clientPhone = document.getElementById('fClientPhone').value.trim();
+  const location = document.getElementById('fLocation').value.trim();
+  const date = document.getElementById('fDate').value;
+  const time = document.getElementById('fTime').value;
+  if(!clientName||!clientPhone||!location||!date||!time){toast('Completează câmpurile obligatorii!','error');return;}
+  const type = document.getElementById('fType').value;
+  const duration = parseFloat(document.getElementById('fDuration').value)||1;
+  const agentCount = parseInt(document.getElementById('fAgentCount').value)||1;
+  const notes = document.getElementById('fNotes').value.trim();
+  const status = document.getElementById('fStatus').value;
+  const customP = parseFloat(document.getElementById('fCustomPrice').value);
+  const rate = TYPE_RATES[type]||50;
+  const auto = rate*duration*agentCount;
+  const price = (!isNaN(customP)&&customP>0) ? customP : auto;
+
+  if(editingJobId){
+    const j = jobs.find(x=>x.id===editingJobId);
+    Object.assign(j,{clientName,clientPhone,location,date,time,type,duration,agentCount,agents:[...selectedAgents],notes,status,price,customPrice:(!isNaN(customP)&&customP>0)?customP:null});
+    toast('Lucrare actualizată!','success');
+  } else {
+    jobs.unshift({id:genId(),clientName,clientPhone,location,date,time,type,duration,agentCount,agents:[...selectedAgents],notes,status,price,customPrice:(!isNaN(customP)&&customP>0)?customP:null});
+    toast('Lucrare adăugată!','success');
+  }
+  saveData();
+  closeModal('jobModal');
+  renderJobs();
+  renderDashboard();
+}
+
+// ===================== DETAIL MODAL =====================
+function openDetail(id){
+  const j = jobs.find(x=>x.id===id);
+  if(!j) return;
+  document.getElementById('detailTitle').textContent = `${j.clientName} — ${j.type}`;
+  const statusOpts = ['pending','active','done','cancelled'];
+  document.getElementById('detailBody').innerHTML=`
+    <div class="detail-section">
+      <div class="section-title">Schimbă Status</div>
+      <div class="status-bar">
+        ${statusOpts.map(s=>`<div class="status-option ${j.status===s?'selected-'+s:''}" onclick="changeStatus(${j.id},'${s}',this)">${statusLabel(s)}</div>`).join('')}
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="section-title">Informații Client</div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>Nume</label><div class="value">${j.clientName}</div></div>
+        <div class="detail-item"><label>Telefon</label><div class="value"><a href="tel:${j.clientPhone}" style="color:var(--accent)">${j.clientPhone}</a></div></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="section-title">Detalii Lucrare</div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>Locație</label><div class="value">${j.location}</div></div>
+        <div class="detail-item"><label>Data & Ora</label><div class="value">${formatDate(j.date)} la ${j.time}</div></div>
+        <div class="detail-item"><label>Tip</label><div class="value"><span class="type-badge">${j.type}</span></div></div>
+        <div class="detail-item"><label>Durată</label><div class="value">${j.duration} ore</div></div>
+        <div class="detail-item"><label>Agenți</label><div class="value">${j.agentCount} persoane</div></div>
+        <div class="detail-item"><label>Cost</label><div class="value" style="color:var(--accent);font-weight:700">${(j.price||0).toLocaleString('ro-RO')} RON</div></div>
+      </div>
+      ${j.agents&&j.agents.length?`<div style="margin-top:10px"><label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase">Echipă</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${j.agents.map(a=>`<span class="agent-tag">${a}</span>`).join('')}</div></div>`:''}
+    </div>
+    ${j.notes?`<div class="detail-section"><div class="section-title">Notițe</div><div class="notes-box">${j.notes}</div></div>`:''}
+    <div class="detail-section">
+      <div class="section-title">Fotografii (Înainte / După)</div>
+      <div class="photo-grid">
+        <div class="photo-slot"><i class="fa fa-camera" style="font-size:20px"></i><span>Adaugă foto</span></div>
+        <div class="photo-slot"><i class="fa fa-camera" style="font-size:20px"></i><span>Adaugă foto</span></div>
+        <div class="photo-slot"><i class="fa fa-camera" style="font-size:20px"></i><span>Adaugă foto</span></div>
+      </div>
+    </div>`;
+  document.getElementById('detailFooter').innerHTML=`
+    <button class="btn btn-secondary" onclick="closeModal('detailModal')">Închide</button>
+    <button class="btn btn-secondary" onclick="openEditJob(${j.id})"><i class="fa fa-pen"></i>Editează</button>
+    <button class="btn btn-primary" onclick="generateInvoice(${j.id})"><i class="fa fa-file-invoice"></i>Factură PDF</button>`;
+  openModal('detailModal');
+}
+
+function changeStatus(id, status, el){
+  const j = jobs.find(x=>x.id===id);
+  if(!j) return;
+  j.status = status;
+  saveData();
+  // update status bar UI
+  el.closest('.status-bar').querySelectorAll('.status-option').forEach(o=>{
+    o.className='status-option';
+    if(o===el) o.classList.add('selected-'+status);
+  });
+  toast('Status actualizat!','success');
+  renderJobs(); renderDashboard();
+}
+
+// ===================== CALENDAR =====================
+const MONTHS_RO = ['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
+const DAYS_RO = ['Lu','Ma','Mi','Jo','Vi','Sâ','Du'];
+
+function renderCalendar(){
+  const now = new Date();
+  if(!calYear) { calYear=now.getFullYear(); calMonth=now.getMonth(); }
+  document.getElementById('calTitle').textContent = `${MONTHS_RO[calMonth]} ${calYear}`;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML='';
+  DAYS_RO.forEach(d=>{ const el=document.createElement('div');el.className='cal-dow';el.textContent=d;grid.appendChild(el); });
+  const first = new Date(calYear,calMonth,1);
+  const startDow = (first.getDay()+6)%7;
+  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
+  const prevDays = new Date(calYear,calMonth,0).getDate();
+  const todayStr = now.toISOString().split('T')[0];
+  let cells = [];
+  for(let i=startDow-1;i>=0;i--) cells.push({day:prevDays-i,cur:false});
+  for(let d=1;d<=daysInMonth;d++) cells.push({day:d,cur:true});
+  while(cells.length%7!==0) cells.push({day:cells.length-daysInMonth-startDow+1,cur:false});
+  cells.forEach(c=>{
+    const cell=document.createElement('div');
+    cell.className='cal-cell'+(c.cur?'':' other-month');
+    const pad = n=>String(n).padStart(2,'0');
+    const dateStr = c.cur ? `${calYear}-${pad(calMonth+1)}-${pad(c.day)}` : '';
+    if(dateStr===todayStr) cell.classList.add('today');
+    const dayEl=document.createElement('div'); dayEl.className='cal-day'; dayEl.textContent=c.day; cell.appendChild(dayEl);
+    if(dateStr){
+      const dayJobs = jobs.filter(j=>j.date===dateStr);
+      if(dayJobs.length) cell.classList.add('has-event');
+      dayJobs.slice(0,3).forEach(j=>{
+        const ev=document.createElement('div');
+        ev.className=`cal-event ev-${j.status}`;
+        ev.textContent=`${j.time} ${j.clientName}`;
+        ev.onclick=(e)=>{e.stopPropagation();openDetail(j.id);};
+        cell.appendChild(ev);
+      });
+      if(dayJobs.length>3){const more=document.createElement('div');more.className='cal-event';more.style.opacity='.6';more.textContent=`+${dayJobs.length-3} mai mult`;cell.appendChild(more);}
+      cell.onclick=()=>{ document.getElementById('fDate').value=dateStr; openAddJob(); };
+    }
+    grid.appendChild(cell);
+  });
+}
+
+function changeMonth(delta){ calMonth+=delta; if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+function goToday(){ const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth(); renderCalendar(); }
+
+// ===================== CLIENTS =====================
+function renderClients(){
+  const s=(document.getElementById('clientSearch').value||'').toLowerCase();
+  const clientMap = {};
+  jobs.forEach(j=>{
+    const key=j.clientPhone;
+    if(!clientMap[key]) clientMap[key]={name:j.clientName,phone:j.clientPhone,jobs:[]};
+    clientMap[key].jobs.push(j);
+  });
+  let clients = Object.values(clientMap);
+  if(s) clients=clients.filter(c=>c.name.toLowerCase().includes(s)||c.phone.includes(s));
+  clients.sort((a,b)=>a.name.localeCompare(b.name));
+  const el=document.getElementById('clientsList');
+  if(!clients.length){el.innerHTML='<div class="empty-state"><i class="fa fa-users"></i><p>Niciun client găsit</p></div>';return;}
+  el.innerHTML=clients.map(c=>{
+    const sorted=[...c.jobs].sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const total=c.jobs.reduce((s,j)=>s+(j.price||0),0);
+    return `<div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="avatar" style="width:36px;height:36px;font-size:14px;flex-shrink:0">${initials(c.name)}</div>
+          <div>
+            <div>${c.name}</div>
+            <div style="font-size:12px;font-weight:400;color:var(--text2)">${c.phone} · ${c.jobs.length} lucrări · ${total.toLocaleString('ro-RO')} RON total</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="openAddJobForClient('${c.name}','${c.phone}')"><i class="fa fa-plus"></i>Nouă lucrare</button>
+      </div>
+      <div>
+        ${sorted.map(j=>`<div class="history-item hi-${j.status}" style="margin-bottom:12px">
+          <div class="hi-date">${formatDate(j.date)} ${j.time}</div>
+          <div class="hi-title">${j.type} — ${j.location.split(',')[0]}</div>
+          <div class="hi-sub">${j.duration}h · ${j.agentCount} agenți · <strong>${(j.price||0).toLocaleString('ro-RO')} RON</strong> · <span class="status status-${j.status}">${statusLabel(j.status)}</span></div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddJobForClient(name, phone){
+  openAddJob();
+  setTimeout(()=>{ document.getElementById('fClientName').value=name; document.getElementById('fClientPhone').value=phone; },100);
+}
+
+// ===================== EMPLOYEES =====================
+function renderEmployees(){
+  const el=document.getElementById('employeeGrid');
+  if(!employees.length){el.innerHTML='<div class="empty-state"><i class="fa fa-users"></i><p>Niciun angajat</p></div>';return;}
+  const statusMap={available:{label:'Disponibil',color:'var(--green)'},busy:{label:'Ocupat',color:'var(--yellow)'},off:{label:'Liber',color:'var(--text3)'}};
+  el.innerHTML=employees.map(e=>{
+    const st=statusMap[e.status]||statusMap.available;
+    const totalJobs=jobs.filter(j=>(j.agents||[]).includes(e.name)).length;
+    return `<div class="employee-card">
+      <div class="emp-avatar">${initials(e.name)}</div>
+      <div class="emp-name">${e.name}</div>
+      <div class="emp-phone">${e.phone}</div>
+      <div class="emp-status"><span style="color:${st.color};font-weight:600">● ${st.label}</span></div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">${e.specialty} · ${totalJobs} lucrări</div>
+      <div class="emp-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openEditEmp(${e.id})"><i class="fa fa-pen"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEmp(${e.id})"><i class="fa fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddEmployee(){ editingEmpId=null; document.getElementById('empModalTitle').textContent='Angajat Nou'; ['eeName','eePhone'].forEach(id=>document.getElementById(id).value=''); document.getElementById('eeStatus').value='available'; document.getElementById('eeSpecialty').value='General'; openModal('empModal'); }
+function openEditEmp(id){ const e=employees.find(x=>x.id===id); if(!e) return; editingEmpId=id; document.getElementById('empModalTitle').textContent='Editează Angajat'; document.getElementById('eeName').value=e.name; document.getElementById('eePhone').value=e.phone; document.getElementById('eeStatus').value=e.status; document.getElementById('eeSpecialty').value=e.specialty; openModal('empModal'); }
+function saveEmployee(){
+  const name=document.getElementById('eeName').value.trim();
+  if(!name){toast('Introdu numele!','error');return;}
+  const data={name,phone:document.getElementById('eePhone').value.trim(),status:document.getElementById('eeStatus').value,specialty:document.getElementById('eeSpecialty').value};
+  if(editingEmpId){ Object.assign(employees.find(e=>e.id===editingEmpId),data); toast('Angajat actualizat!','success'); }
+  else { employees.push({id:genId(),...data}); toast('Angajat adăugat!','success'); }
+  saveEmpData(); closeModal('empModal'); renderEmployees();
+}
+function deleteEmp(id){ if(!confirm('Ștergi angajatul?')) return; employees=employees.filter(e=>e.id!==id); saveEmpData(); renderEmployees(); toast('Angajat șters','info'); }
+
+// ===================== REPORTS =====================
+function renderReports(){
+  const now=new Date();
+  const thisMonth=jobs.filter(j=>{ const d=new Date(j.date); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); });
+  const done=thisMonth.filter(j=>j.status==='done');
+  const revenue=done.reduce((s,j)=>s+(j.price||0),0);
+  const hours=done.reduce((s,j)=>s+(j.duration||0),0);
+  const typeCount={};
+  jobs.forEach(j=>{ typeCount[j.type]=(typeCount[j.type]||0)+1; });
+  document.getElementById('reportsContent').innerHTML=`
+    <div class="report-summary">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px">
+        <div><div class="report-big">${revenue.toLocaleString('ro-RO')}</div><div class="report-label">RON încasați luna aceasta</div></div>
+        <div><div class="report-big">${done.length}</div><div class="report-label">Lucrări finalizate</div></div>
+        <div><div class="report-big">${hours}</div><div class="report-label">Ore lucrate</div></div>
+        <div><div class="report-big">${employees.filter(e=>e.status==='available').length}</div><div class="report-label">Agenți disponibili</div></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px"><i class="fa fa-chart-pie"></i> Distribuție Tipuri</div>
+        ${Object.entries(typeCount).sort((a,b)=>b[1]-a[1]).map(([type,count])=>{
+          const pct=Math.round(count/jobs.length*100);
+          return `<div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${type}</span><span style="color:var(--text2)">${count} (${pct}%)</span></div>
+            <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--accent);border-radius:3px;transition:width .5s"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px"><i class="fa fa-users"></i> Top Agenți</div>
+        ${employees.map(e=>{
+          const cnt=jobs.filter(j=>(j.agents||[]).includes(e.name)).length;
+          return {e,cnt};
+        }).sort((a,b)=>b.cnt-a.cnt).map(({e,cnt})=>`
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div class="avatar">${initials(e.name)}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:500">${e.name}</div>
+              <div style="font-size:11px;color:var(--text2)">${cnt} lucrări</div>
+            </div>
+            <div style="color:var(--accent);font-weight:700">${cnt}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ===================== INVOICE =====================
+function generateInvoice(id){
+  const j=jobs.find(x=>x.id===id);
+  if(!j) return;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Factură - ${j.clientName}</title>
+  <style>body{font-family:Arial,sans-serif;max-width:600px;margin:40px auto;color:#333;padding:20px}
+  .header{display:flex;justify-content:space-between;margin-bottom:30px}
+  .logo{font-size:24px;font-weight:900;color:#00d4aa}
+  h2{margin-bottom:5px}table{width:100%;border-collapse:collapse;margin:20px 0}
+  th{background:#f5f5f5;padding:8px;text-align:left;border-bottom:2px solid #ddd}
+  td{padding:8px;border-bottom:1px solid #eee}.total{font-size:20px;font-weight:700;color:#00d4aa;text-align:right;margin-top:10px}
+  .footer{margin-top:40px;color:#999;font-size:12px;text-align:center;border-top:1px solid #eee;padding-top:20px}
+  @media print{button{display:none}}</style></head><body>
+  <div class="header"><div class="logo">🧹 CleanPro</div><div><h2>FACTURĂ PROFORMĂ</h2><p>Nr. #${String(j.id).slice(-6)}</p><p>Data: ${formatDate(j.date)}</p></div></div>
+  <hr><p><strong>Client:</strong> ${j.clientName}</p><p><strong>Telefon:</strong> ${j.clientPhone}</p><p><strong>Adresă:</strong> ${j.location}</p>
+  <table><thead><tr><th>Serviciu</th><th>Durată</th><th>Agenți</th><th>Preț/h/agent</th><th>Total</th></tr></thead>
+  <tbody><tr><td>${j.type}</td><td>${j.duration}h</td><td>${j.agentCount}</td><td>${TYPE_RATES[j.type]||50} RON</td><td><strong>${(j.price||0).toLocaleString('ro-RO')} RON</strong></td></tr></tbody></table>
+  <div class="total">TOTAL: ${(j.price||0).toLocaleString('ro-RO')} RON</div>
+  ${j.notes?`<p><strong>Notițe:</strong> ${j.notes}</p>`:''}
+  <div class="footer">CleanPro — Servicii profesionale de curățenie · Mulțumim pentru încredere!</div>
+  <br><button onclick="window.print()">🖨 Printează / Salvează PDF</button>
+  </body></html>`);
+  win.document.close();
+}
+
+// ===================== EXPORT CSV =====================
+function exportCSV(){
+  const headers=['ID','Client','Telefon','Locatie','Data','Ora','Tip','Durata(h)','NrAgenti','Agenti','Status','Pret(RON)','Note'];
+  const rows=jobs.map(j=>[j.id,j.clientName,j.clientPhone,`"${j.location}"`,j.date,j.time,j.type,j.duration,j.agentCount,`"${(j.agents||[]).join(', ')}"`,j.status,j.price||0,`"${j.notes||''}"`]);
+  const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`cleanpro-export-${new Date().toISOString().split('T')[0]}.csv`;a.click();
+  toast('Export CSV descărcat!','success');
+}
+
+// ===================== SEARCH =====================
+function globalSearchFn(q){
+  if(!q){ return; }
+  const lower=q.toLowerCase();
+  const found=jobs.filter(j=>j.clientName.toLowerCase().includes(lower)||j.clientPhone.includes(lower)||j.location.toLowerCase().includes(lower));
+  if(found.length){
+    document.getElementById('jobSearch').value=q;
+    showView('jobs',document.querySelectorAll('.nav-item')[1]);
+    renderJobs();
+  }
+}
+
+function suggestClient(val){
+  const c=document.getElementById('clientSuggest');
+  if(!val||val.length<2){c.innerHTML='';return;}
+  const uniq={};
+  jobs.forEach(j=>{ if(j.clientName.toLowerCase().includes(val.toLowerCase())) uniq[j.clientPhone]=j; });
+  const matches=Object.values(uniq).slice(0,4);
+  if(!matches.length){c.innerHTML='';return;}
+  c.innerHTML=`<div style="position:absolute;top:2px;left:0;right:0;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);z-index:100;overflow:hidden">
+    ${matches.map(j=>`<div style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border)" onmousedown="fillClient('${j.clientName}','${j.clientPhone}')" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">${j.clientName} <span style="color:var(--text3)">${j.clientPhone}</span></div>`).join('')}
+  </div>`;
+}
+function fillClient(name,phone){ document.getElementById('fClientName').value=name; document.getElementById('fClientPhone').value=phone; document.getElementById('clientSuggest').innerHTML=''; }
+
+// ===================== UTILS =====================
+function initials(name){ return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function formatDate(str){ if(!str) return ''; const d=new Date(str); return d.toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'}); }
+function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+
+function toast(msg, type='info'){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  const icons={success:'fa-check-circle',error:'fa-circle-exclamation',info:'fa-circle-info'};
+  t.innerHTML=`<i class="fa ${icons[type]||'fa-circle-info'}" style="color:var(--${type==='success'?'green':type==='error'?'red':'accent'})"></i><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.style.animation='toastOut .3s forwards'; setTimeout(()=>t.remove(),300); },3000);
+}
+
+// ===================== RESPONSIVE =====================
+function checkMobile(){ const mb=document.getElementById('mobileMenuBtn'); if(window.innerWidth<=768){mb.style.display='flex';document.getElementById('sidebar').style.transform='translateX(-100%)';}else{mb.style.display='none';document.getElementById('sidebar').style.transform='';} }
+window.addEventListener('resize',checkMobile);
+document.querySelector('.overlay') && document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); document.body.style.overflow=''; }));
+
+// ===================== INIT =====================
+checkMobile();
+updateBadges();
+renderDashboard();
+const now=new Date();
+calYear=now.getFullYear(); calMonth=now.getMonth();
+</script>
+</body>
+</html>
